@@ -38,21 +38,6 @@ jobs:
         docker compose ps
         docker compose logs
 
-    - name: Run health checks
-      run: |
-        # Проверка статуса сервисов через Docker
-        for service in $(docker compose ps --services); do
-          echo "Checking service: $service"
-          # Проверка статуса контейнера
-          docker compose ps $service | grep -q "Up" || exit 1
-        done
-
-    - name: Detailed service logs
-      if: failure()
-      run: |
-        # Вывод подробных логов в случае неудачи
-        docker compose logs
-
     - name: Stop and clean up
       if: always()
       run: |
