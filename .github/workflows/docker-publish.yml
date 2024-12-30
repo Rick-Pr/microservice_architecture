@@ -17,40 +17,47 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
+    - name: Install Docker Compose
+      run: |
+        # Установка Docker Compose через официальный способ
+        sudo apt-get update
+        sudo apt-get install -y docker-compose-plugin
+        docker compose version
+
     - name: Lint Docker Compose file
       run: |
         # Проверка синтаксиса docker-compose
-        docker-compose config
+        docker compose config
 
     - name: Build Docker Compose services
       run: |
         # Сборка всех сервисов без кэша
-        docker-compose build --no-cache
+        docker compose build --no-cache
 
     - name: Start services
       run: |
         # Запуск сервисов в фоновом режиме
-        docker-compose up -d
+        docker compose up -d
 
     - name: Check service status
       run: |
         # Проверка статуса сервисов
-        docker-compose ps
-        docker-compose logs
+        docker compose ps
+        docker compose logs
 
     - name: Run health checks
       run: |
         # Пример базовых проверок (адаптируйте под свой проект)
         # Проверка доступности портов или эндпоинтов
-        for service in $(docker-compose ps --services); do
+        for service in $(docker compose ps --services); do
           echo "Checking service: $service"
           # Замените на реальную проверку вашего сервиса
-          docker-compose exec -T $service curl -f http://localhost:8000 || exit 1
+          docker compose exec -T $service curl -f http://localhost:8000 || exit 1
         done
 
     - name: Stop and clean up
       if: always()
       run: |
         # Остановка и удаление контейнеров
-        docker-compose down
-        docker-compose rm -f
+        docker compose down
+        docker compose rm -f
