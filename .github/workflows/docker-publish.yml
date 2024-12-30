@@ -16,7 +16,6 @@ jobs:
 
     - name: Install Docker Compose
       run: |
-        # Установка Docker Compose CLI
         mkdir -p ~/.docker/cli-plugins/
         curl -SL https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
         chmod +x ~/.docker/cli-plugins/docker-compose
@@ -24,37 +23,40 @@ jobs:
 
     - name: Lint Docker Compose file
       run: |
-        # Проверка синтаксиса docker-compose
         docker compose config
 
     - name: Build Docker Compose services
       run: |
-        # Сборка всех сервисов без кэша
         docker compose build --no-cache
 
     - name: Start services
       run: |
-        # Запуск сервисов в фоновом режиме
         docker compose up -d
 
     - name: Check service status
       run: |
-        # Проверка статуса сервисов
         docker compose ps
         docker compose logs
 
     - name: Run health checks
       run: |
-        # Пример базовых проверок (адаптируйте под свой проект)
+        # Проверка доступности сервисов через ping или wget
         for service in $(docker compose ps --services); do
           echo "Checking service: $service"
-          # Замените на реальную проверку вашего сервиса
-          docker compose exec -T $service curl -f http://localhost:8000 || exit 1
+          # Используем wget вместо curl
+          docker compose exec -T $service wget -q -O - http://localhost:8000 || exit 1
+        done
+
+    - name: Additional health checks
+      run: |
+        # Альтернативная проверка с использованием nc (netcat)
+        for service in $(docker compose ps --services); do
+          echo "Checking network connectivity for: $service"
+          docker compose exec -T $service sh -c "nc -z -w5 localhost 8000" || exit 1
         done
 
     - name: Stop and clean up
       if: always()
       run: |
-        # Остановка и удаление контейнеров
         docker compose down
         docker compose rm -f
